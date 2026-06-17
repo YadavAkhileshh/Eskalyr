@@ -15,44 +15,38 @@ Eskalyr is designed to handle multiple enterprise data modalities (CSV FAQs, SQL
 
 ```mermaid
 flowchart TD
-    %% Styling
-    classDef user fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px;
-    classDef logic fill:#e8f5e9,stroke:#43a047,stroke-width:2px;
-    classDef data fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
-    classDef llm fill:#fff3e0,stroke:#fb8c00,stroke-width:2px;
-
-    User([User Request]) ::: user --> Router
+    User([User Request]) --> Router
     
     subgraph "1. Two-Stage Retrieval Pipeline"
-        Router[[Embed & Keyword Map]] ::: logic
+        Router[[Embed & Keyword Map]]
         
-        Router -->|Vector Search| Chroma[(ChromaDB)] ::: data
-        Router -->|Keyword Search| BM25[(BM25 Store)] ::: data
+        Router -->|Vector Search| Chroma[(ChromaDB)]
+        Router -->|Keyword Search| BM25[(BM25 Store)]
         
-        Chroma -.->|Top 15| Pool{Candidate Pool\n30 Documents} ::: logic
+        Chroma -.->|Top 15| Pool{Candidate Pool\n30 Documents}
         BM25 -.->|Top 15| Pool
         
-        Pool --> Reranker[[Cross-Encoder Reranker\n'ms-marco']] ::: logic
-        Reranker -.->|Top 5 Context| Eval{Confidence\nScore > 30%?} ::: logic
+        Pool --> Reranker[[Cross-Encoder Reranker\n'ms-marco']]
+        Reranker -.->|Top 5 Context| Eval{Confidence\nScore > 30%?}
     end
 
     subgraph "2. Agentic Routing & Generation"
-        Eval -- No --> Escalate[Agentic Escalation\nCreate Ticket] ::: logic
-        Eval -- Yes --> Prompt[Context + Prompt] ::: logic
+        Eval -- No --> Escalate[Agentic Escalation\nCreate Ticket]
+        Eval -- Yes --> Prompt[Context + Prompt]
         
-        Prompt --> LLM[[Groq Qwen3-32B]] ::: llm
+        Prompt --> LLM[[Groq Qwen3-32B]]
         LLM --> Draft(Draft Answer)
     end
     
     subgraph "3. Guardrails & Logging"
-        Draft --> Verifier{Verifier LLM:\nAre all claims cited?} ::: logic
+        Draft --> Verifier{Verifier LLM:\nAre all claims cited?}
         
         Verifier -- No --> Escalate
-        Verifier -- Yes --> Output([Final Answer]) ::: user
+        Verifier -- Yes --> Output([Final Answer])
         
-        Escalate --> SQLite[(SQLite escalations.db)] ::: data
-        Output --> UI{User Feedback} ::: logic
-        UI --> Analytics[(SQLite analytics.db)] ::: data
+        Escalate --> SQLite[(SQLite escalations.db)]
+        Output --> UI{User Feedback}
+        UI --> Analytics[(SQLite analytics.db)]
     end
 ```
 
