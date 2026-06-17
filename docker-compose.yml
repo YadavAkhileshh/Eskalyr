@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # The main customer-facing chatbot application
+  chatbot:
+    build: .
+    container_name: eskalyr-chatbot
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount the data directory so SQLite DBs and Chroma persist across container restarts
+      - ./data:/app/data
+      - ./chroma_store:/app/chroma_store
+    env_file:
+      - .env
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    restart: unless-stopped
+
+  # The internal operational analytics dashboard
+  dashboard:
+    build: .
+    container_name: eskalyr-dashboard
+    ports:
+      - "8502:8502"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    command: streamlit run dashboard.py --server.port=8502 --server.address=0.0.0.0
+    restart: unless-stopped
+    depends_on:
+      - chatbot
