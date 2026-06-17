@@ -2,12 +2,11 @@
 
 Eskalyr is an advanced, production-grade Agentic RAG (Retrieval-Augmented Generation) system built for enterprise network support. Moving beyond standard wrappers, Eskalyr features a hybrid search pipeline, cross-encoder reranking, strict hallucination guardrails, and autonomous workflow escalation.
 
-> **💡 Note for Hiring Managers & Recruiters:** 
-> This repository demonstrates production-level AI engineering. Instead of relying solely on an LLM, it implements a highly engineered **Compound AI System**. 
-> Key technical implementations include:
-> - **Cost-Optimized Retrieval:** Combines BM25 & Semantic Search with a Cross-Encoder Reranker (`ms-marco`), increasing retrieval precision while cutting LLM token usage by over 80%.
-> - **Autonomous Agentic Guardrails:** Features a secondary "Verifier LLM" that strictly suppresses hallucinations and autonomously escalates unconfident queries to human agents via an SQL database.
-> - **Full Telemetry & Evaluation:** Custom Python dashboards for real-time tracking of latency, confidence logits, token-spend, and user feedback.
+## Technical Highlights
+
+- **Cost-Optimized Retrieval:** Combines BM25 & Semantic Search with a Cross-Encoder Reranker (`ms-marco`), increasing retrieval precision while cutting LLM token usage by over 80%.
+- **Autonomous Agentic Guardrails:** Features a secondary "Verifier LLM" that strictly suppresses hallucinations and autonomously escalates unconfident queries to human agents via an SQL database.
+- **Full Telemetry & Evaluation:** Custom Python dashboards for real-time tracking of latency, confidence logits, token-spend, and user feedback.
 
 ## Architecture Overview
 
