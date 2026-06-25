@@ -51,13 +51,13 @@ jobs:
           result = subprocess.run(['python', 'evaluate_retrieval.py'], capture_output=True, text=True)
           print(result.stdout)
 
-          # Extract the recall percentage and fail the build if it drops below 70%
           for line in result.stdout.splitlines():
-              if 'Top-3 Recall' in line:
+              # Only match the final results line, not the header line
+              if 'Final Metric' in line and 'Top-3 Recall' in line:
                   recall = float(line.split('=')[1].split('%')[0].strip())
                   print(f'Recall Score: {recall}%')
                   if recall < 70.0:
-                      print(f'FAILED: Recall {recall}% is below the 70% threshold. A code change has broken retrieval quality!')
+                      print(f'FAILED: Recall {recall}% is below the 70% threshold.')
                       sys.exit(1)
                   else:
                       print(f'PASSED: Recall {recall}% meets the minimum threshold.')
