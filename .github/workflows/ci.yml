@@ -1,0 +1,65 @@
+name: Eskalyr CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate Code & Run Retrieval Benchmark
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install CPU-only PyTorch (avoids 2.5GB GPU download)
+        run: |
+          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install project dependencies
+        run: |
+          pip install .
+
+      - name: Lint code with Ruff
+        run: |
+          pip install ruff
+          ruff check . --select=E,F --ignore=E501
+
+      - name: Seed the vector database for evaluation
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          python ingest_faq.py
+          python ingest_tickets.py
+          python ingest_pdf.py
+
+      - name: Run retrieval benchmark (must pass 70%+ recall)
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          python -c "
+          import subprocess, sys
+          result = subprocess.run(['python', 'evaluate_retrieval.py'], capture_output=True, text=True)
+          print(result.stdout)
+
+          # Extract the recall percentage and fail the build if it drops below 70%
+          for line in result.stdout.splitlines():
+              if 'Top-3 Recall' in line:
+                  recall = float(line.split('=')[1].split('%')[0].strip())
+                  print(f'Recall Score: {recall}%')
+                  if recall < 70.0:
+                      print(f'FAILED: Recall {recall}% is below the 70% threshold. A code change has broken retrieval quality!')
+                      sys.exit(1)
+                  else:
+                      print(f'PASSED: Recall {recall}% meets the minimum threshold.')
+                      sys.exit(0)
+          "
