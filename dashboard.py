@@ -17,7 +17,7 @@ def load_data():
         df = pd.read_sql_query("SELECT * FROM analytics", conn)
         conn.close()
         return df
-    except Exception as e:
+    except Exception:
         return pd.DataFrame()
 
 df = load_data()

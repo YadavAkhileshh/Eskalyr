@@ -7,10 +7,10 @@ import os
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 from dotenv import load_dotenv
-load_dotenv()
-
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
+
+load_dotenv()
 CHROMA_DIR = "chroma_store"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
